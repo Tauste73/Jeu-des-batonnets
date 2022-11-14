@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Batonnets</title>
+</head>
+<body>
+    <div>
+        <h1>Batonnets</h1>
+           
+
+        <div class="card" id="user-card">
+            
+                <div class="form-group">
+                    <label for="user-name">Nom du joueur</label>
+                    <input type="text" class="form-control" id="user-name" name="user-name" placeholder="Nom du joueur" required>
+                </div>
+               
+                <button id="valideButton">Valider</button>
+            
+        </div>
+
+        <div id="rooms-card">
+            <h2>Salles</h2>
+            <ul id="rooms-list"></ul>
+
+        </div>
+
+        <div id="game">
+            <h4 id="turn-message"></h4>
+            <div id="divBatonnet">
+                <p>Nombre de batonnets restant : </p>
+                <p id="nbBatonnets"></p>
+            </div>
+
+            <div id ="divButton">
+                <button id="bouton1">1</button>
+                <button id="bouton2">2</button>
+                <button id="bouton3">3</button>
+            </div>    
+
+        </div>
+
+        
+
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+
+
+
+
+    <script>
+        var nbBatonnets = 21;
+        const player = {
+            host: false,
+            roomId : null,
+            username : "",
+            socketId : "",
+            nbBatonJoue: null,
+            turn : false,
+            win : false,
+        }
+        let nomEnnemie = "";
+        document.getElementById("game").style.display = "none";
+        document.getElementById("nbBatonnets").innerHTML = nbBatonnets;
+        const socket = io();
+        socket.emit('getRooms');
+        socket.on('listRooms', (rooms) => {
+            let html = "";
+            if(rooms.length > 0){
+                rooms.forEach(room => {
+                
+                if(room.players.length !== 2){
+                    html += `<li class="list-groupe">
+                                <p>Salon de ${room.players[0].username}</p>
+                                <button class="join-room" data-room="${room.id}">Rejoindre</button>
+                        </li>`;
+                }
+                
+            });
+            }
+
+            if(html !== ""){
+                    document.getElementById('rooms-list').innerHTML = html;
+                }
+           for (const element of document.getElementsByClassName('join-room')) {
+                element.addEventListener('click', joinRoom, false);
+            }
+            
+            
+        });
+
+        socket.on('play', (joueurEnnemie)=>{
+            if(joueurEnnemie.socketId !== player.socketId && !joueurEnnemie.turn){
+
+                nbBatonnets -= joueurEnnemie.nbBatonJoue;
+                document.getElementById("nbBatonnets").innerHTML = nbBatonnets;
+                
+                if(joueurEnnemie.win){
+                    document.getElementById("turn-message").innerHTML = "Vous avez perdu LOOSER <br> F5 + recréer une room pour rejouer j'ai eu la flemme de faire la suite...";
+                    document.getElementById("divButton").style.display = "none";
+                    document.getElementById("divBatonnet").style.display = "none";
+                }
+                else{
+                    document.getElementById("turn-message").innerHTML = "C'est à toi de jouer";
+                    
+                }
+                player.turn = true;
+
+            }
+            else{
+                if(player.win){
+                    document.getElementById("turn-message").innerHTML = "Vous avez gagné <br> F5 + recréer une room pour rejouer j'ai eu la flemme de faire la suite..." ;
+                    document.getElementById("divButton").style.display = "none";
+                    document.getElementById("divBatonnet").style.display = "none";
+                }
+                else{
+                    document.getElementById("turn-message").innerHTML = "C'est à " + nomEnnemie+" de jouer";
+                }
+            }
+        })
+
+
+        socket.on('startGame', players => {
+            startGame(players)
+        });
+
+        socket.on('joinRoom', (roomId) => {
+            player.roomId = roomId;
+                      
+        });
+        
+
+        var valideButton = document.getElementById("valideButton");
+        var bouton1 = document.getElementById("bouton1");
+        var bouton2 = document.getElementById("bouton2");
+        var bouton3 = document.getElementById("bouton3");
+
+        bouton1.addEventListener("click", function(){
+            if(player.turn){
+                nbBatonnets -= 1;
+                document.getElementById("nbBatonnets").innerHTML = nbBatonnets;
+                player.turn = false;
+                if(nbBatonnets === 1){
+                    player.win = true;
+                    
+                }
+                player.nbBatonJoue = 1;
+                socket.emit('play', player);
+            }
+        });
+        bouton2.addEventListener("click", function(){
+            if(player.turn && nbBatonnets > 2){
+                nbBatonnets -= 2;
+                document.getElementById("nbBatonnets").innerHTML = nbBatonnets;
+                player.turn = false;
+                if(nbBatonnets === 1){
+                    player.win = true;
+                }
+                player.nbBatonJoue = 2;
+                socket.emit('play', player);
+            }
+        });
+        bouton3.addEventListener("click", function(){
+            if(player.turn && nbBatonnets > 3){
+                nbBatonnets -= 3;
+                document.getElementById("nbBatonnets").innerHTML = nbBatonnets;
+                player.turn = false;
+                if(nbBatonnets === 1){
+                    player.win = true;
+                }
+                player.nbBatonJoue = 3;
+                socket.emit('play', player);
+            }
+        });
+
+        valideButton.addEventListener("click", function(){
+            player.username = document.getElementById("user-name").value;
+            player.host = true;
+            player.turn = true;
+            player.socketId = socket.id;
+            console.log(player);
+            document.getElementById("user-card").style.display = "none";
+            document.getElementById("rooms-card").style.display = "none";
+            socket.emit("playerData", player);
+        });
+
+
+       
+
+
+        function startGame(players){
+            document.getElementById("user-card").style.display = "none";
+            document.getElementById("rooms-card").style.display = "none";
+            document.getElementById("game").style.display = "block";
+            
+
+            const joueurEnnemie = players.find(p => p.socketId !== player.socketId);
+            nomEnnemie = joueurEnnemie.username;
+            if(player.turn && player.host){
+                document.getElementById("turn-message").innerHTML = "Bonjour "+ player.username+" c'est à vous de jouer";
+            }
+            else{
+                document.getElementById("turn-message").innerHTML = "C'est à " + nomEnnemie + " de jouer";
+            }
+
+
+        }
+
+        const joinRoom = function(){
+            if(document.getElementById("user-name").value !== ""){
+                const roomId = this.dataset.room;
+                player.username = document.getElementById("user-name").value;
+                player.socketId = socket.id;
+                player.roomId = roomId;
+
+                socket.emit('playerData', player);
+                document.getElementById("user-card").style.display = "none";
+                document.getElementById("rooms-card").style.display = "none";
+                document.getElementById("game").style.display = "block";
+            }
+        }
+
+
+    </script>
+
+
+</body>
+</html>

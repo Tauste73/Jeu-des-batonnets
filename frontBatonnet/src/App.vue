@@ -8,4 +8,5 @@
 
 <script setup>
   import Batonnets from '@/components/Batonnets.vue'
+
 </script>

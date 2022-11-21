@@ -28,7 +28,7 @@
               </v-list>
           </div>
 
-          <v-btn id="creerroom" rounded="pill" color="primary" v-on:click.stop="creerroom()">Créer une room</v-btn>
+          <v-btn id="creerroom" rounded="pill" color="primary" @click="creerroom">Créer une room</v-btn>
 
 
          </div>
@@ -40,8 +40,11 @@
 
 </template>
 
-<script>
+<script setup>
+import {ref} from 'vue'
+import io from 'socket.io-client';
 
+let items = []
 const player = {
             host: false,
             roomId : null,
@@ -52,7 +55,7 @@ const player = {
             win : false,
         }
 //socket
-import io from 'socket.io-client';
+
 const socket = io('http://localhost:4000', { transports: ['websocket'] });
 
 
@@ -73,6 +76,7 @@ socket.on('listRooms',(rooms)=>{
     rooms.forEach(room => {
       if(room.players.length < 2){
         this.items.push(room)
+        console.log(this.items)
       }
 
 
@@ -83,13 +87,15 @@ socket.on('listRooms',(rooms)=>{
 })
 
 
-  function creerroom() {
+function creerroom() {
+  console.log("click");
+
             player.username = username
             player.host = true;
             player.turn = true;
             player.socketId = socket.id;
             console.log(player);
-            top.style.display = "none";
+            //top.style.display = "none";
             socket.emit("playerData", player);
         }
 
@@ -98,9 +104,8 @@ socket.on('listRooms',(rooms)=>{
 
 
 
-
-
 </script>
+
 
 <style>
   #middle {

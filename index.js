@@ -2,18 +2,47 @@ const {Socket} = require('socket.io');
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
-const port = process.env.PORT;
+const port = 4000;
+const cors=require("cors");
+app.use(cors());
 
-const io = require('socket.io')(server);
+
+const io = require('socket.io')(server, {
+    
+	cors: { 
+		origin: ["http://localhost:3000"], 
+		methods: ["GET", "POST"],
+        	transports: ['websocket', 'polling'],
+        	autoConnect: true,
+        	pingInterval: 25000, 
+        	pingTimeout: 180000, 
+	},
+	allowEIO3: true,
+	
+    
+  });
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    next();
+});
+
+app.use(function(req, res, next) {
+    req.io = io;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    next();
+    });
 
 
 
-app.use('/jquery', express.static(__dirname + '/node_modules/jquery'));
 
-app.use(express.static('templates'));
+
+app.use(express.static('frontBatonnet/dist'));
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/templates/batonnets.html');
+    res.sendFile(__dirname + '/frontBatonnet/dist/index.html');
     });
 
 
@@ -29,6 +58,7 @@ server.listen(port, () => {
 
 
 let rooms = [];
+
 
 io.on('connection', (socket) => {
     console.log('Connexion ' + socket.id);

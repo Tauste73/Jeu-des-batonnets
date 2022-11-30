@@ -111,6 +111,7 @@ io.on('connection', (socket) => {
                 }
             });
         });
+        io.emit('listRooms', rooms);
     });
 
 });

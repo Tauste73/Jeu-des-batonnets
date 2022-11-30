@@ -7,6 +7,6 @@
 </template>
 
 <script setup>
-  import Batonnets from '@/components/Batonnets.vue'
+  import Batonnets from '@/pages/Batonnets.vue'
 
 </script>

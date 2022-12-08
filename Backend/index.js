@@ -39,17 +39,6 @@ app.use(function(req, res, next) {
 
 
 
-app.use(express.static('frontBatonnet/dist'));
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/frontBatonnet/dist/index.html');
-    });
-
-
-app.get('/batonnets', (req, res) => {
-    console.log('batonnets');
-    res.sendFile(__dirname + '/templates/batonnets.html');
-    });
 
 
 server.listen(port, () => {
@@ -98,6 +87,20 @@ io.on('connection', (socket) => {
         console.log('play ' + player.username);
         io.to(player.roomId).emit('play', player);
 
+    });
+
+    socket.on('disconnectBtn', () => {
+        console.log('Déconnexion ' + socket.id);
+        let r = null;
+        rooms.forEach(room => {
+            room.players.forEach((player) => {
+                if(player.socketId === socket.id && player.host){
+                   r = room;
+                   rooms = rooms.filter(room => room !== r);
+                }
+            });
+        });
+        io.emit('listRooms', rooms);
     });
 
     socket.on('disconnect', () => {

@@ -13,12 +13,12 @@ import { createApp } from 'vue'
 // Plugins
 import { registerPlugins } from '@/plugins'
 
+import router from './router'
 
 
 
 
-
-const app = createApp(App)
+const app = createApp(App).use(router)
 
 
 

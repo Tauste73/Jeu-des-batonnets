@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <v-main>
-      <Batonnets />
+    <v-main id="v-main">
+      <RouterView />
     </v-main>
   </v-app>
 </template>
@@ -10,3 +10,8 @@
   import Batonnets from '@/pages/Batonnets.vue'
 
 </script>
+
+<style>
+
+
+</style>

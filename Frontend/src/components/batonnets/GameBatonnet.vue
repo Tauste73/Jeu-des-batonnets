@@ -2,7 +2,6 @@
   <div v-if="gameEncours==true">
     <div>
       <h3>Au tour de : {{tourJoueur}}</h3>
-      <p>{{player.username}}</p>
       <h3>Nombre de batonnets restants : {{nbBatonnets}}</h3>
     </div>
     <div>
@@ -32,10 +31,15 @@ export default {
       nbBatonnets: 21,
       gameEncours: true,
       aGagne: false,
-      tourJoueur: ""
+      tourJoueur: "",
     };
   },
   created(){
+    if(this.player.host == true){
+      this.tourJoueur = this.player.username;
+    } else {
+      this.tourJoueur = this.player.nomEnnemie;
+    }
     this.socket.on('play', (joueurEnnemie)=>{
 
             if(joueurEnnemie.socketId !== this.player.socketId && !joueurEnnemie.turn){
@@ -58,11 +62,11 @@ export default {
                 if(this.player.win){
                     this.gameEncours = false;
                     this.aGagne = true;
+                } else{
+                    this.tourJoueur = this.player.nomEnnemie;
                 }
 
-                else{
-                    this.tourJoueur = joueurEnnemie.username;
-                }
+
             }
         })
   },

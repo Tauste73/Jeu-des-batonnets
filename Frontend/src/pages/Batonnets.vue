@@ -2,7 +2,7 @@
 
 
 
-<template>
+<template id="batonnets">
 
   <v-container class="fill-height">
     <v-responsive class="d-flex align-center text-center fill-height">
@@ -10,7 +10,7 @@
         <div v-if="top==true" id="top">
           <PresGame />
           <h4>Entrez un pseudo</h4>
-          <input v-model="player.username" placeholder="Pseudo" />
+          <input id="input" v-model="player.username" placeholder="Pseudo" />
          <div id="middle">
           <div>
             <ListRoom :socket="socket" :player="player"/>
@@ -97,6 +97,16 @@ export default {
         this.top = false;
       }
     },
+    leaveRoom(){
+      this.socket.emit('disconnectBtn', this.player.roomId);
+      this.top = true;
+      this.inGame = false;
+      this.player.roomId = null;
+      this.player.host = false;
+      this.player.turn = false;
+      this.player.nomEnnemie = "";
+      this.socket.emit('getRooms')
+    }
 
 
   }
@@ -113,5 +123,25 @@ export default {
     display: flex;
     justify-content: space-around;
   }
+  .fill-height {
+
+    min-height: 100%;
+    min-width: 100%;
+    background-image: url('../assets/fond_batonnets.jpg');
+  }
+  #input {
+    width: 200px;
+    height: 30px;
+    border-radius: 5px;
+    border: 1px solid rgb(0, 0, 0);
+    padding: 5px;
+    margin: 10px;
+    color: rgb(0, 0, 0);
+    font-size: 16px;
+
+  }
+
+
+
 
 </style>

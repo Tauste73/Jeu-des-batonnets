@@ -36,7 +36,10 @@ app.use(function(req, res, next) {
     });
 
 
-
+app.get('/', function(req, res, next){
+    res.send("Hello World!")
+    next();
+})
 
 
 

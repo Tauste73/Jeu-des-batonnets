@@ -1,14 +1,10 @@
-
-
-
-
 <template id="batonnets">
 
   <v-container class="fill-height">
     <v-responsive class="d-flex align-center text-center fill-height">
 
         <div v-if="top==true" id="top">
-          <PresGame />
+          <PresGame :title="title" :rules="rules" />
           <h4>Entrez un pseudo</h4>
           <input id="input" v-model="player.username" placeholder="Pseudo" />
          <div id="middle">
@@ -51,6 +47,9 @@ export default {
   },
   data(){
     return{
+      title: "Jeu des batonnets",
+      rules: "Le jeu se passe en 1v1. Votre adversaire et vous possédé communément 21 batonnets. Vous allez chacun votre tour retirer 1, 2 ou 3 batonnets. Le joueur qui retire le dernier batonnet perd la partie.",
+
 
       top: true,
       inGame: false,
@@ -123,12 +122,7 @@ export default {
     display: flex;
     justify-content: space-around;
   }
-  .fill-height {
 
-    min-height: 100%;
-    min-width: 100%;
-    background-image: url('../assets/fond_batonnets.jpg');
-  }
   #input {
     width: 200px;
     height: 30px;

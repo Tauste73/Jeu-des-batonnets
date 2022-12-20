@@ -2,25 +2,46 @@ const {Socket} = require('socket.io');
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
-const port = process.env.PORT;
+const port = 4000;
+const cors=require("cors");
+app.use(cors());
 
-const io = require('socket.io')(server);
 
+const io = require('socket.io')(server, {
+    
+	cors: { 
+		origin: ["*"], 
+		methods: ["GET", "POST"],
+        	transports: ['websocket', 'polling'],
+        	autoConnect: true,
+        	pingInterval: 25000, 
+        	pingTimeout: 180000, 
+	},
+	allowEIO3: true,
+	
+    
+  });
 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    next();
+});
 
-app.use('/jquery', express.static(__dirname + '/node_modules/jquery'));
-
-app.use(express.static('templates'));
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/templates/batonnets.html');
+app.use(function(req, res, next) {
+    req.io = io;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    next();
     });
 
 
-app.get('/batonnets', (req, res) => {
-    console.log('batonnets');
-    res.sendFile(__dirname + '/templates/batonnets.html');
-    });
+app.get('/', function(req, res, next){
+    res.send("Hello World!")
+    next();
+})
+
+
 
 
 server.listen(port, () => {
@@ -29,6 +50,7 @@ server.listen(port, () => {
 
 
 let rooms = [];
+
 
 io.on('connection', (socket) => {
     console.log('Connexion ' + socket.id);
@@ -70,6 +92,20 @@ io.on('connection', (socket) => {
 
     });
 
+    socket.on('disconnectBtn', () => {
+        console.log('Déconnexion ' + socket.id);
+        let r = null;
+        rooms.forEach(room => {
+            room.players.forEach((player) => {
+                if(player.socketId === socket.id && player.host){
+                   r = room;
+                   rooms = rooms.filter(room => room !== r);
+                }
+            });
+        });
+        io.emit('listRooms', rooms);
+    });
+
     socket.on('disconnect', () => {
         console.log('Déconnexion ' + socket.id);
         let r = null;
@@ -81,6 +117,7 @@ io.on('connection', (socket) => {
                 }
             });
         });
+        io.emit('listRooms', rooms);
     });
 
 });

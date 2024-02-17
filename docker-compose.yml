@@ -1,6 +1,7 @@
 version: "3.8"
 services:
   nodeserver:
+    restart: always
     build:
       context: ./Backend
     ports:
@@ -12,6 +13,8 @@ services:
       context: ./Frontend
     ports:
       - "80:80"
+    depends_on:
+      - nodeserver
     
 
   
